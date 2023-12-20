@@ -1,0 +1,117 @@
+
+<h4 class="animate__animated animate__fadeInDown mt-sm mb-md">LISTA DE POSTS</h4>
+
+
+<div class="input-group animate__animated animate__fadeInUp mb-md">
+    <textarea title="Buscar palabra clave o frase en todo el documento" [disabled]="titleToSearch.trim() !== ''" #searchByKeywordInput (keyup)="searchByKeyword(searchByKeywordInput.value)" type="text" placeholder="Filtrar por id, título o frase" class="form-control" style="height: 60px"></textarea>
+</div>
+
+<div class="input-group animate__animated animate__fadeInRightBig mb-md">
+    <input title="Buscar solo por título en todo el documento" [disabled]="keywordToSearch.trim() !== ''" #searchByTitleInput (keyup)="searchByTitle(searchByTitleInput.value)" type="text" placeholder="Filtrar por título" class="form-control">
+</div>
+
+<div class="animate__animated animate__fadeInLeftBig">
+    <pagination-controls 
+        [previousLabel]="'Anterior'"
+        [nextLabel]="'Siguiente'" 
+        *ngIf="this.titleToSearch.trim() === '' && this.keywordToSearch.trim() === ''" (pageChange)="p = $event">
+    </pagination-controls>
+</div>
+
+<div class="animate__animated animate__fadeInUp"> 
+    <p *ngIf="this.postList.length===0"> Error de conexión, intente más tarde. </p> 
+    <table class="table table-hover">
+        
+        <thead>
+            <tr>
+                <th scope="col">ID Usuario</th>
+                <th scope="col">ID</th>
+                <th scope="col">Título</th>
+                <th scope="col">Cuerpo</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody *ngIf="this.titleToSearch.trim() === '' && this.keywordToSearch.trim() === ''">
+            <tr class="animate__animated animate__fadeIn" *ngFor="let post of this.postList | paginate: { itemsPerPage: 10, currentPage: p }">
+                <td>{{post.userId}}</td>
+                <td>{{post.id}}</td>
+                <td>{{post.title}}</td>
+                <td>{{post.body}}</td>
+                <td>
+                    <button (click)="this.createEditPostFormGroup(post);" data-bs-toggle="modal" data-bs-target="#staticBackdrop" class="btn btn-secondary mt-sm" title="Editar post">✍</button>
+                    <button (click)="this.deletePost(post)" class="btn btn-danger ml-sm mt-sm"  title="Eliminar post">✖</button> 
+                </td>
+            </tr>
+        </tbody>
+        
+        <tbody *ngIf="this.titleToSearch.trim() !== '' && this.keywordToSearch.trim() === ''">
+            <tr *ngFor="let post of this.postList | searchByTitle:this.titleToSearch">
+                <td >{{post.userId}}</td>
+                <td>{{post.id}}</td>
+                <td>{{post.title}}</td>
+                <td>{{post.body}}</td>
+                <td>
+                    <button (click)="this.createEditPostFormGroup(post);" data-bs-toggle="modal" data-bs-target="#staticBackdrop" class="btn btn-secondary mt-sm" title="Editar post">✍</button>
+                    <button (click)="this.deletePost(post)" class="btn btn-danger ml-sm mt-sm" title="Eliminar post">✖</button> 
+                </td>
+            </tr>
+            <p> No se encontraron más resultados para el título ingresado.</p> 
+        </tbody>
+
+        <tbody *ngIf="this.keywordToSearch.trim() !== '' && this.titleToSearch.trim() === ''">
+            <tr *ngFor="let post of this.postList | searchByKeyword:this.keywordToSearch">
+                <td >{{post.userId}}</td>
+                <td>{{post.id}}</td>
+                <td>{{post.title}}</td>
+                <td>{{post.body}}</td>
+                <td>
+                    <button (click)="this.createEditPostFormGroup(post);" data-bs-toggle="modal" data-bs-target="#staticBackdrop" class="btn btn-secondary mt-sm" title="Editar post">✍</button>
+                    <button (click)="this.deletePost(post)" class="btn btn-danger ml-sm mt-sm" title="Eliminar post">✖</button> 
+                </td>
+            </tr>
+            <p> No se encontraron más resultados para el id, frase o título ingresado.</p> 
+        </tbody>
+    </table>
+    
+</div>
+<div class="animate__animated animate__fadeInRightBig">
+    <pagination-controls 
+        [previousLabel]="'Anterior'"
+        [nextLabel]="'Siguiente'" 
+        *ngIf="this.titleToSearch.trim() === ''&& this.keywordToSearch.trim() === ''" (pageChange)="p = $event">
+    </pagination-controls>
+</div>
+    
+       
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel"><b>Editando post:</b><br><p>ID Usuario: {{this.postToEdit?.userId}} <br> ID Post: {{this.postToEdit?.id}} </p> </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form [formGroup]="editPostFormGroup" (ngSubmit)="saveEditPost()" *ngIf="this.editPostFormGroup">
+                <div class="modal-body">
+                    <div class="form-floating mb-3">
+                        <input formControlName="postToEditTitle" (keyup)="refreshLength()" maxlength="80" type="text" class="form-control" id="floatingInput">
+                        <label for="floatingInput"><span style="color: red;">*</span>Título {{this.titleLength}}/80</label>
+                      </div>
+                      <div class="form-floating">
+                        <textarea formControlName="postToEditBody" (keyup)="refreshLength()" maxlength="500" class="form-control" id="floatingTextarea2" style="height: 100px"></textarea>
+                        <label for="floatingTextarea2"><span style="color: red;">*</span>Cuerpo {{this.bodyLength}}/500</label>
+                      </div>
+                </div>
+                <div class="modal-footer">
+                    <button title="Guardar cambios" *ngIf="!invalidPostToEditTitle && !invalidPostToEditBody; else labelMandatory" type="submit" class="btn btn-success mlr-auto animate__animated animate__fadeInDown" data-bs-dismiss="modal">✔</button>
+                    <ng-template #labelMandatory><label class="animate__animated animate__fadeInDown">Campos obligatorios (<span style="color: red;">*</span>)</label></ng-template>
+                </div>
+            </form>   
+        </div>
+    </div>
+</div>
+        
+       
+
+

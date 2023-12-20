@@ -1,0 +1,26 @@
+<h4 class="animate__animated animate__fadeInDown mt-sm mb-md">FORMULARIO DE REGISTRO</h4>
+<form [formGroup]="addPostFormGroup" (ngSubmit)="saveAddPost()" class="animate__animated animate__fadeInUp"><!---->
+
+  <div class="form-floating mb-3">
+    <select formControlName="postToAddUserId" class="form-select" id="floatingSelect" aria-label="Floating label select example">
+      <option value="" selected disabled hidden>{{this.userIdList.length===0?'Error de conexión, intente más tarde.':'Seleccione'}}</option>
+      <option *ngFor="let userId of this.userIdList" [value]=userId >{{userId}}</option>
+    </select>
+    <label for="floatingSelect"><span style="color: red;">*</span>ID de usuario</label>
+  </div>
+  
+  <div class="form-floating mb-3">
+    <input formControlName="postToAddTitle" (keyup)="refreshLength()" maxlength="80" type="text" class="form-control" id="floatingInput">
+    <label for="floatingInput"><span style="color: red;">*</span>Título {{this.titleLength}}/80</label>
+  </div>
+
+  <div class="form-floating mb-3">
+    <textarea formControlName="postToAddBody" (keyup)="refreshLength()" maxlength="500" class="form-control" id="floatingTextarea2" style="height: 100px"></textarea>
+    <label for="floatingTextarea2"><span style="color: red;">*</span>Cuerpo {{this.bodyLength}}/500</label>
+  </div>
+
+  <div class="plr-auto">
+    <button title="Guardar cambios" class="btn btn-success animate__animated animate__fadeInDown" *ngIf="!invalidPostToAddTitle && !invalidPostToAddBody && !invalidPostToAddUserId; else labelMandatory" type="submit">✔</button>
+    <ng-template #labelMandatory><label class="animate__animated animate__fadeInDown">Campos obligatorios (<span style="color: red;">*</span>)</label></ng-template>
+  </div>
+</form>
